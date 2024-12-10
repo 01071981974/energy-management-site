@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signalement d'anomalies énergétiques</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #f0f9f0;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        h1 {
+            color: #007f00;
+        }
+        .counter {
+            font-size: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #000;
+            background: #fff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        input, select, button, textarea {
+            padding: 10px;
+            font-size: 16px;
+            width: 300px;
+        }
+        button {
+            background-color: #007f00;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f00;
+        }
+        .report-summary {
+            margin-top: 20px;
+            text-align: left;
+            max-width: 600px;
+        }
+        .report-summary h2 {
+            color: #007f00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Signalement d'anomalies</h1>
+    <p class="counter">Nombre total de signalements : <span id="totalCounter">0</span></p>
+    <form id="reportForm">
+        <input type="text" id="firstName" placeholder="Prénom" required>
+        <input type="text" id="lastName" placeholder="Nom" required>
+        <select id="anomalyType" required>
+            <option value="" disabled selected>Type d'anomalie</option>
+            <option value="eclairage">Un éclairage resté allumé</option>
+            <option value="climatisation">Une climatisation restée en marche</option>
+            <option value="divers">Divers</option>
+        </select>
+        <textarea id="diversText" placeholder="Description (si divers)" style="display:none;"></textarea>
+        <button type="submit">Signaler</button>
+    </form>
+    <div class="report-summary" id="reportSummary">
+        <h2>Bilan des signalements</h2>
+        <p>Éclairage resté allumé : <span id="eclairageCount">0</span></p>
+        <p>Climatisation restée en marche : <span id="climatisationCount">0</span></p>
+        <p>Divers : <span id="diversCount">0</span></p>
+        <ul id="diversList" style="list-style-type: disc;"></ul>
+        <h3>Signaleurs :</h3>
+        <ul id="signaleursList" style="list-style-type: disc;"></ul>
+    </div>
+    <script>
+        const totalCounter = document.getElementById('totalCounter');
+        const eclairageCount = document.getElementById('eclairageCount');
+        const climatisationCount = document.getElementById('climatisationCount');
+        const diversCount = document.getElementById('diversCount');
+        const diversList = document.getElementById('diversList');
+        const signaleursList = document.getElementById('signaleursList');
+        const reportForm = document.getElementById('reportForm');
+        const anomalyType = document.getElementById('anomalyType');
+        const diversText = document.getElementById('diversText');
+
+        // Données locales pour le suivi
+        let data = {
+            total: 0,
+            eclairage: 0,
+            climatisation: 0,
+            divers: [],
+            signaleurs: []
+        };
+
+        // Gestion de l'affichage du champ "Divers"
+        anomalyType.addEventListener('change', () => {
+            if (anomalyType.value === 'divers') {
+                diversText.style.display = 'block';
+            } else {
+                diversText.style.display = 'none';
+            }
+        });
+
+        // Mise à jour des affichages
+        function updateDisplay() {
+            totalCounter.textContent = data.total;
+            eclairageCount.textContent = data.eclairage;
+            climatisationCount.textContent = data.climatisation;
+            diversCount.textContent = data.divers.length;
+            diversList.innerHTML = data.divers.map(item => `<li>${item}</li>`).join('');
+            signaleursList.innerHTML = data.signaleurs.map(person => `<li>${person}</li>`).join('');
+        }
+
+        // Gestion du formulaire
+        reportForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const anomaly = anomalyType.value;
+            const fullName = `${firstName} ${lastName}`;
+
+            if (firstName && lastName && anomaly) {
+                data.total++;
+                if (!data.signaleurs.includes(fullName)) {
+                    data.signaleurs.push(fullName);
+                }
+                if (anomaly === 'eclairage') {
+                    data.eclairage++;
+                } else if (anomaly === 'climatisation') {
+                    data.climatisation++;
+                } else if (anomaly === 'divers') {
+                    const description = diversText.value.trim();
+                    if (description) {
+                        data.divers.push(`${fullName}: ${description}`);
+                    }
+                }
+                updateDisplay();
+                reportForm.reset();
+                diversText.style.display = 'none';
+                alert('Signalement enregistré avec succès !');
+            }
+        });
+
+        // Initialisation
+        updateDisplay();
+    </script>
+</body>
+</html>
